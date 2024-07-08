@@ -9,32 +9,21 @@ The Audio Activity Detector is designed to:
 - Detect the specific trigger word "boy"
 - Provide a user interface using Streamlit for easy interaction
 
-## Repository Contents
-
-- .DS_Store: macOS system file
-- .gitignore: Specifies intentionally untracked files to ignore
-- Audio_activity_detection.ipynb: Jupyter notebook for audio activity detection
-- Dockerfile: Contains instructions for building a Docker image of the application
-- README.md: This file, providing project information and instructions
-- audio_trigger_app.py: Main application script
-- audio_trigger_model.h5: Trained model in H5 format
-- audio_trigger_model_GRU.keras: GRU-based model in Keras format
-- audio_trigger_model_L2Reg.keras: L2 regularized model in Keras format
-- main.py: Main Python script
-- requirements.txt: List of Python dependencies
-
 ## Deployment with Streamlit
 
 To deploy the model using Streamlit, follow these steps:
 
 1. Clone the repository:
+    ```sh
    git clone https://github.com/Mouaadag/audio-activity-detector.git
    cd audio-activity-detector
 
 2. Install the required dependencies:
+   ``` sh
    pip install -r requirements.txt
 
 3. Run the Streamlit app:
+   ``` sh
    streamlit run audio_trigger_app.py
 
 4. Open your web browser and navigate to the URL provided by Streamlit (typically http://localhost:8501)
