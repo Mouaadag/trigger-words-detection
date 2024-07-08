@@ -8,5 +8,7 @@ new_data/
 # Ignore all .npy files
 *.npy
 
+
+# Ignore specific files
 main.py 
 Dockerfile
