@@ -1,12 +1,16 @@
 # Audio Activity Detector
 
-This project implements an audio activity detector that triggers on the word "boy" in MP3 files.
+This project implements an audio activity detector that triggers the word "boy" in MP3 files.
+
+The training data is from [Kaggle page](https://www.kaggle.com/datasets/mozillaorg/common-voice). 
+
+For processing data and extracting features, I was inspired by the paper published by: Christin Jose, Yuriy Mishchenko, Thibaud Senechal, Anish Shah, Alex Escott, Shiv Vitaladevuni. [White Paper](https://arxiv.org/abs/2008.03790)
 
 ## Project Overview
 
 The Audio Activity Detector is designed to:
 - Process MP3 audio files
-- Detect the specific trigger word "boy"
+- Detect the specific trigger word "boy", by building two models LSTM-based model, and GRU-based model.
 - Provide a user interface using Streamlit for easy interaction
 
 ## Deployment with Streamlit
