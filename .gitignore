@@ -1,0 +1,9 @@
+
+# Custom folders to keep empty but tracked
+negatives/
+positives/
+raw_data/
+new_data/
+
+# Ignore all .npy files
+*.npy
