@@ -12,3 +12,5 @@ new_data/
 # Ignore specific files
 main.py 
 Dockerfile
+.gitignore
+.DS_Store
