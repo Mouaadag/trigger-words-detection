@@ -12,30 +12,6 @@ from zenml.logger import get_logger
 from tensorflow import keras
 from steps.keras_materializer import KerasMaterializer
 
-
-# class KerasModelMaterializer(BaseMaterializer):
-#     ASSOCIATED_TYPES = (Model,)
-
-#     def load(self, data_type: Type[Model]) -> Model:
-#         return load_model(f"{self.uri}.keras")
-
-#     def save(self, model: Model) -> None:
-#         model.save(f"{self.uri}.keras")  # Adding .keras extension
-
-
-# # Assuming serialize_model is intended for manual serialization handling
-# def serialize_model(model: Model, path: str) -> None:
-#     materializer = KerasModelMaterializer()
-#     materializer.uri = path
-#     materializer.save(model)
-
-
-# def deserialize_model(path: str) -> Model:
-#     materializer = KerasModelMaterializer()
-#     materializer.uri = path
-#     return materializer.load(Model)
-
-
 experiment_tracker = Client().active_stack.experiment_tracker
 
 # Initialize logger

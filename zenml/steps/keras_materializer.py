@@ -1,37 +1,6 @@
 from zenml.materializers.base_materializer import BaseMaterializer
 from tensorflow import keras
 from typing import Type, Any
-
-
-# class KerasFunctionalMaterializer(BaseMaterializer):
-#     ASSOCIATED_TYPES = (keras.Model,)
-
-#     def handle_input(self, data_type: Type[Any]) -> keras.Model:
-#         """Load the model from the artifact store."""
-#         return keras.models.load_model(self.uri, compile=False)
-
-#     def handle_return(self, model: keras.Model) -> None:
-#         """Save the model to the artifact store."""
-#         model.save(self.uri, save_format="keras")
-
-
-# import os
-# from typing import Type, Any
-# from zenml.materializers.base_materializer import BaseMaterializer
-# from tensorflow import keras
-
-
-# class KerasFunctionalMaterializer(BaseMaterializer):
-#     ASSOCIATED_TYPES = (keras.Model,)
-
-#     def handle_input(self, data_type: Type[Any]) -> keras.Model:
-#         """Load the model from the artifact store."""
-#         return keras.models.load_model(self.uri, compile=False)
-
-
-#     def handle_return(self, model: keras.Model) -> None:
-#         """Save the model to the artifact store."""
-#         model.save(self.uri, save_format="tf")
 import os
 import tempfile
 from typing import TYPE_CHECKING, Any, ClassVar, Dict, Tuple, Type

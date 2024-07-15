@@ -61,9 +61,6 @@ def training_trigger_word_pipeline(
     # Model training
     model = training_step(split_data=split_data, epochs=epochs, batch_size=batch_size)
 
-    # Model serialization
-    # serialized_model = serialize_model(model=model)
-
     # Model evaluation
     evaluation_results = evaluate_model(model=model, split_data=split_data)
 
