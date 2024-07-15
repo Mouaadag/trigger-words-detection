@@ -1,6 +1,9 @@
 from pipelines.run_training import training_trigger_word_pipeline
 from zenml.client import Client
 import mlflow
+from zenml.logger import get_logger
+
+logger = get_logger(__name__)
 
 if __name__ == "__main__":
     positive_directory = "data/positives_samples"
@@ -8,7 +11,7 @@ if __name__ == "__main__":
 
     experiment_tracker = Client().active_stack.experiment_tracker
     print(f"Experiment tracking URI: {experiment_tracker.get_tracking_uri()}")
-
+    logger.info(f"Experiment tracking URI: {experiment_tracker.get_tracking_uri()}")
     # Set the experiment name
     mlflow.set_experiment("trigger_detection_word_tracker")
 

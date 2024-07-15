@@ -223,6 +223,5 @@ def training_step(
         }
     )
     mlflow.tensorflow.log_model(model, "trigger_word_detection_model")
-    # save_model(model, "saved_models/model.keras")
     model.save("saved_models/trigger_word_detection_model.keras", save_format="keras")
     return model

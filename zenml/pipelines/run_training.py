@@ -1,24 +1,15 @@
 # run_training.py
 from zenml import pipeline
-from steps.data_ingestion import data_ingestion_step
+from steps.data_ingestion import load_data, extract_features, prepare_dataset
 from steps.splitting_data import split_dataset
 from steps.training import training_step
 from steps.evaluation import evaluate_model
-
-# from steps.model_serialization import serialize_model
-
 from zenml import Model, pipeline
 
 
 model = Model(
-    # The name uniquely identifies this model
-    # It usually represents the business use case
     name="trigger_word_detection",
-    # The version specifies the version
-    # If None or an unseen version is specified, it will be created
-    # Otherwise, a version will be fetched.
     version=None,
-    # Some other properties may be specified
     license="MIT",
     description="Trigger word detection model",
 )
@@ -52,16 +43,22 @@ def training_trigger_word_pipeline(
 
     The pipeline is marked with `@pipeline(enable_cache=False, model=model)` decorator, indicating caching is disabled for this pipeline, and it is associated with a specific model configuration.
     """
-    # Data ingestion
-    data = data_ingestion_step(positive_dir=positive_dir, negative_dir=negative_dir)
 
-    # Data splitting
-    split_data = split_dataset(data=data, test_size=test_size, val_size=val_size)
+    # Load audio file paths from the specified positive and negative directories
+    loaded_data = load_data(positive_dir=positive_dir, negative_dir=negative_dir)
+    # Extract features (e.g., MFCC) from the loaded audio files
+    features = extract_features(files=loaded_data)
+    # Prepare the dataset by combining positive and negative features and creating labels
+    prepared_data = prepare_dataset(features=features)
+    # Split the prepared dataset into training, validation, and test sets
+    split_data = split_dataset(
+        data=prepared_data, test_size=test_size, val_size=val_size
+    )
 
-    # Model training
+    # Train the model using the split dataset, specified epochs, and batch size
     model = training_step(split_data=split_data, epochs=epochs, batch_size=batch_size)
 
-    # Model evaluation
+    # Evaluate the trained model using the test set from the split data
     evaluation_results = evaluate_model(model=model, split_data=split_data)
 
     return model, evaluation_results
