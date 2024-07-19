@@ -34,13 +34,27 @@ To create a ZenML experiment, deploy an artifact store, orchestrator, and regist
 
    Replace `<orchestrator_name>` with the name of your orchestrator and `<orchestrator_type>` with the desired type (e.g., `airflow`, `kubeflow`, `default`).
 
-7. Register a stack by executing the following command:
+7. Install zenml integrations for mlflow so we can track experiments.
+
+```
+ zenml integration install mlflow -y
+```
+
+8. Once the MLflow integration is installed, you can register an MLflow model registry component in your stack:
+
+```
+ zenml model-registry register mlflow_model_registry --flavor=mlflow
+
+```
+
+8. Register a stack by executing the following command:
    ```
     zenml stack register <stack_name> \\
     -e <experiment_name> \\
     -o default_orchestrator \\
     -a <artifact_store_name> \\
-    -d <model-deployer_name>
+    -d <model-deployer_name> \\
+    -r <model-registry>
    ```
    Replace `<stack_name>` with the name of your stack.
 
