@@ -10,7 +10,7 @@ from zenml.client import Client
 from zenml.logger import get_logger
 from zenml.logger import get_logger
 from tensorflow import keras
-from steps.keras_materializer import KerasMaterializer
+from steps.training_steps.keras_materializer import KerasMaterializer
 
 experiment_tracker = Client().active_stack.experiment_tracker
 

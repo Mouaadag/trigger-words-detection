@@ -46,19 +46,26 @@ To create a ZenML experiment, deploy an artifact store, orchestrator, and regist
 
 Remember to adjust the commands and options based on your specific project requirements and environment setup.
 
+In this project I created pipeline to train and deploy a model using Mlflow,
+
 To execute the `run_training_pipeline` in the `zenml` project, follow these steps:
 
 1. Open a terminal or command prompt.
 2. Navigate to the root directory of the `zenml` project using the `cd` command.
 3. Run the following command to activate the virtual environment (if applicable):
    ```
-   source venv/bin/activate
+   source zenml-venv/bin/activate
    ```
-4. Run the `run_training_pipeline` script by executing the following command:
+4. Run the `run_train_and_deploy_pipeline.py` script by executing the following command:
    ```
-   python run_training_pipeline.py
+   python run_train_and_deploy_pipeline.py
    ```
 5. Wait for the training pipeline to complete. You should see the progress and any output or logs generated during the process.
 6. Once the training pipeline finishes, you can analyze the results or perform any further actions as required.
+
+7. To run inference with `streamlit` you can execute the command :
+   ```
+   streamlit run run_inference_with_streamlit/run_streamlit.py
+   ```
 
 Remember to adjust the commands based on your specific project structure and environment setup.

@@ -14,7 +14,8 @@ from zenml.logger import get_logger
 logger = get_logger(__name__)
 
 
-@step(experiment_tracker=experiment_tracker.name, enable_cache=False)
+@step(experiment_tracker=experiment_tracker.name, enable_cache=True)
+# @step(step_operator="azure_step_op")
 def split_dataset(
     data: Dict[str, np.ndarray],
     test_size: float = 0.01,

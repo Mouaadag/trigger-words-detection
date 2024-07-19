@@ -1,6 +1,6 @@
 # steps/training.py
-from zenml import step, log_model_metadata, ArtifactConfig
-
+from zenml import step, log_model_metadata, ArtifactConfig, get_step_context
+from zenml.model_registries.base_model_registry import RegistryModelVersion
 from zenml.client import Client
 import numpy as np
 import mlflow
@@ -15,7 +15,10 @@ from tensorflow.keras.layers import (
     GRU,
     Dense,
 )
+
 from tensorflow.keras.optimizers import Adam
+
+# from tensorflow.keras.optimizers.legacy import Adam
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.callbacks import (
     EarlyStopping,
@@ -27,15 +30,22 @@ from zenml import ArtifactConfig, log_artifact_metadata, step
 from typing import Dict
 from typing_extensions import Annotated
 
-experiment_tracker = Client().active_stack.experiment_tracker
-
 # Import the KerasFunctionalMaterializer and register it with the Model class
 from tensorflow import keras
-from steps.keras_materializer import KerasMaterializer
-
+from zenml.integrations.tensorflow.materializers.keras_materializer import (
+    KerasMaterializer,
+)
+from zenml.integrations.mlflow.steps.mlflow_registry import (
+    mlflow_register_model_step,
+)
+from typing_extensions import Annotated
+import os
+import shutil
+import mlflow.tensorflow
 
 # Initialize logger
 logger = get_logger(__name__)
+experiment_tracker = Client().active_stack.experiment_tracker
 
 
 # Define a function to build the model with a default input shape
@@ -113,11 +123,14 @@ lr_scheduler = LearningRateScheduler(lr_schedule)
 
 @step(
     experiment_tracker=experiment_tracker.name,
-    enable_cache=True,
+    enable_cache=False,
     output_materializers=KerasMaterializer,
 )
 def training_step(
-    split_data: Dict[str, np.ndarray], epochs: int = 25, batch_size: int = 32
+    split_data: Dict[str, np.ndarray],
+    epochs: int = 25,
+    batch_size: int = 32,
+    name: str = "trigger_word_detection_model",
 ) -> Annotated[
     keras.Model,
     ArtifactConfig(
@@ -126,25 +139,27 @@ def training_step(
     ),
 ]:
     """
-    Executes the training step for a trigger word detection model.
-
-    This function takes split data (training, validation, and test sets), the number of epochs, and the batch size as inputs.
-    It first checks for GPU availability and then proceeds to build and compile the model using the Adam optimizer and binary crossentropy loss.
-    The model is trained on the training data and validated on the validation data. Additionally, this function logs the training parameters (epochs and batch size) using MLflow.
+    This function initializes the model training process with the given dataset, epochs, batch size, and model name.
+    It first checks for GPU availability to leverage hardware acceleration.
+    If a GPU is available, it proceeds with GPU-based training; otherwise, it defaults to CPU training.
+    The model is then built with a specified input shape derived from the training data,
+    compiled with the Adam optimizer with a learning rate of 1e-3 and a clipnorm of 1.0,
+    and finally trained with the provided training and validation datasets.
 
     Parameters:
-    - split_data (Dict[str, np.ndarray]): A dictionary containing the training, validation, and test data with keys 'X_train', 'X_val', 'X_test', 'y_train', 'y_val', 'y_test'.
-    - epochs (int, optional): The number of epochs to train the model. Defaults to 25.
-    - batch_size (int, optional): The size of the batches of data. Defaults to 32.
+        split_data (Dict[str, np.ndarray]): A dictionary containing the training, validation, and test datasets.
+        Expected keys are 'X_train', 'X_val', 'y_train', 'y_val'.
+        epochs (int, optional): The number of epochs for which the model should be trained. Defaults to 25.
+        batch_size (int, optional): The size of the batches of data during training. Defaults to 32.
+        name (str, optional): The name of the model to be used for saving and logging purposes. Defaults to "trigger_word_detection_model".
 
     Returns:
-    - Annotated[Model, ArtifactConfig]: The trained model annotated with ArtifactConfig, indicating it is a model artifact named "trigger_word_detection_model".
+        Annotated[keras.Model, ArtifactConfig]: The trained Keras model,
+        annotated with ArtifactConfig to indicate it is a model artifact with a specified name and flag indicating it is a model artifact.
 
     Note:
-    - The function verifies the availability of a GPU and prefers using it over CPU for training.
-    - It uses MLflow for logging the training parameters and TensorFlow's autolog feature for automatic logging.
+        The function prints the number of available GPUs and indicates whether the training will proceed on GPU or CPU.
     """
-
     # Verify TensorFlow can see the GPU
     print(
         "Num GPUs Available: ", len(tf.config.experimental.list_physical_devices("GPU"))
@@ -155,10 +170,8 @@ def training_step(
         print("Using CPU")
     X_train = split_data["X_train"]
     X_val = split_data["X_val"]
-    X_test = split_data["X_test"]
     y_train = split_data["y_train"]
     y_val = split_data["y_val"]
-    y_test = split_data["y_test"]
 
     model = build_model(input_shape=(X_train.shape[1], X_train.shape[2]))
     model.compile(
@@ -166,7 +179,7 @@ def training_step(
         loss="binary_crossentropy",
         metrics=["accuracy"],
     )
-    mlflow.tensorflow.autolog()
+    mlflow.tensorflow.autolog(registered_model_name=name)
 
     # Log parameters
     mlflow.log_param("epochs", epochs)
@@ -209,7 +222,7 @@ def training_step(
             "epochs": epochs,
             "batch_size": batch_size,
         },
-        artifact_name="trigger_word_detection_model",
+        artifact_name=name,
     )
 
     log_model_metadata(
@@ -222,6 +235,24 @@ def training_step(
             "batch_size": batch_size,
         }
     )
-    mlflow.tensorflow.log_model(model, "trigger_word_detection_model")
-    model.save("saved_models/trigger_word_detection_model.keras", save_format="keras")
+    model_save_path = os.path.join("saved_models", name)
+    if os.path.exists(model_save_path):
+        shutil.rmtree(model_save_path)
+    os.makedirs(model_save_path, exist_ok=True)
+    # mlflow.tensorflow.save_model(model, model_save_path)
+    model.save("saved_models/trigger_word_detection_model.keras")
+    # log model with mlflow
+    mlflow.tensorflow.log_model(model, name)
+    # register mlflow model
+    mlflow_register_model_step.entrypoint(
+        model,
+        name=name,
+    )
+    # keep track of mlflow version for future use
+    model_registry = Client().active_stack.model_registry
+    if model_registry:
+        version = model_registry.get_latest_model_version(name=name, stage=None)
+        if version:
+            model_ = get_step_context().model
+            model_.log_metadata({"model_registry_version": version.version})
     return model

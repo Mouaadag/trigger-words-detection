@@ -1,26 +1,22 @@
-from pipelines.run_training import training_trigger_word_pipeline
+from pipelines.run_deployment import deployment_pipeline
 from zenml.client import Client
 import mlflow
 from zenml.logger import get_logger
 
 logger = get_logger(__name__)
+mlflow.set_experiment("trigger_detection_word_tracker")
+
 
 if __name__ == "__main__":
-    positive_directory = "data/positives_samples"
-    negative_directory = "data/negatives_samples"
-
     experiment_tracker = Client().active_stack.experiment_tracker
     print(f"Experiment tracking URI: {experiment_tracker.get_tracking_uri()}")
     logger.info(f"Experiment tracking URI: {experiment_tracker.get_tracking_uri()}")
     # Set the experiment name
-    mlflow.set_experiment("trigger_detection_word_tracker")
 
-    training_trigger_word_pipeline(
-        positive_dir=positive_directory,
-        negative_dir=negative_directory,
-        epochs=25,
-        batch_size=32,
-    )
+    print(f"Experiment tracking URI: {experiment_tracker.get_tracking_uri()}")
+    logger.info(f"Experiment tracking URI: {experiment_tracker.get_tracking_uri()}")
+    # Set the experiment name
+    deployment_pipeline()
 
     print("To view the MLflow UI, run:")
     print(f"mlflow ui --backend-store-uri {experiment_tracker.get_tracking_uri()}")

@@ -1,22 +1,29 @@
 # run_training.py
 from zenml import pipeline
-from steps.data_ingestion import load_data, extract_features, prepare_dataset
-from steps.splitting_data import split_dataset
-from steps.training import training_step
-from steps.evaluation import evaluate_model
+from steps.training_steps.data_ingestion import (
+    load_data,
+    extract_features,
+    prepare_dataset,
+)
+from steps.training_steps.splitting_data import split_dataset
+from steps.training_steps.training import (
+    training_step,
+)
+from steps.training_steps.evaluation import evaluate_model
 from zenml import Model, pipeline
 
+from steps.deployment_steps.auto_deploy import deploy_if_accurate, deploy_model
 
 model = Model(
     name="trigger_word_detection",
     version=None,
-    license="MIT",
+    license="Apache License, Version 2.0",
     description="Trigger word detection model",
 )
 
 
 @pipeline(enable_cache=False, model=model)
-def training_trigger_word_pipeline(
+def train_and_deploy_pipeline(
     positive_dir: str,
     negative_dir: str,
     epochs: int,
@@ -57,8 +64,14 @@ def training_trigger_word_pipeline(
 
     # Train the model using the split dataset, specified epochs, and batch size
     model = training_step(split_data=split_data, epochs=epochs, batch_size=batch_size)
-
+    # Register the trained model and log its version
+    # registered_model = register_model_and_log_version_step(model=model)
     # Evaluate the trained model using the test set from the split data
     evaluation_results = evaluate_model(model=model, split_data=split_data)
+    # Deploy the model if the accuracy is above a certain threshold
+    result = deploy_if_accurate(evaluation_results=evaluation_results)
+    # deploy_model(should_deploy=result)
+    service = deploy_model(should_deploy=result)
+    # Deploy if accurate
 
-    return model, evaluation_results
+    return model, evaluation_results, service
